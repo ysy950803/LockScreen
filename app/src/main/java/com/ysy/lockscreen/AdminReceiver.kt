@@ -1,6 +1,5 @@
 package com.ysy.lockscreen
 
-import android.annotation.SuppressLint
 import android.app.admin.DeviceAdminReceiver
 import android.content.Context
 import android.content.Intent
@@ -11,7 +10,6 @@ class AdminReceiver : DeviceAdminReceiver() {
 
     private val TAG = "AdminReceiver"
 
-    @SuppressLint("UnsafeProtectedBroadcastReceiver")
     override fun onReceive(context: Context?, intent: Intent?) {
         super.onReceive(context, intent)
         Log.d(TAG, "onReceive")
