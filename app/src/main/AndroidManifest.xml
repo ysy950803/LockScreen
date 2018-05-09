@@ -9,7 +9,9 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen">
 
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:excludeFromRecents="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
