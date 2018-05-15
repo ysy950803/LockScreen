@@ -95,7 +95,7 @@ class MainActivity : Activity() {
     }
 
     private fun isNewLockMode(): Boolean {
-        return Build.VERSION.SDK_INT >= 23 && Build.MANUFACTURER != "Xiaomi"
+        return Build.VERSION.SDK_INT > 23 && Build.MANUFACTURER != "Xiaomi"
     }
 
     private fun canWriteSystem(): Boolean {
