@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.Process
 import android.provider.Settings
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
@@ -24,15 +25,29 @@ class MainActivity : Activity() {
 
     private var mOriginalLockTime: Int = 0
     private var mIsNewLockMode: Boolean = false
+    private var mIsRequestingPerm: Boolean = false
 
     private var mComponentName: ComponentName? = null
     private var mScreenStatReceiver: ScreenStatReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        init()
         setContentView(R.layout.activity_main)
+        init()
         tryLockScreen()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (!mIsRequestingPerm) {
+            startActivity(Intent(this, MainActivity::class.java))
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterScreenStat()
+        resetLockTime()
     }
 
     private fun init() {
@@ -41,6 +56,9 @@ class MainActivity : Activity() {
         mComponentName = ComponentName(this, AdminReceiver::class.java)
 
         if (mIsNewLockMode) {
+            layout_main_bg.setOnClickListener({
+                blackScreen()
+            })
             mScreenStatReceiver = ScreenStatReceiver()
             registerScreenStat()
         }
@@ -81,7 +99,7 @@ class MainActivity : Activity() {
     }
 
     private fun isNewLockMode(): Boolean {
-        return Build.VERSION.SDK_INT >= 23
+        return Build.VERSION.SDK_INT >= 23 && Build.MANUFACTURER != "Xiaomi"
     }
 
     private fun canWriteSystem(): Boolean {
@@ -90,6 +108,7 @@ class MainActivity : Activity() {
 
     @TargetApi(Build.VERSION_CODES.M)
     private fun requestWriteSettingsPerm() {
+        mIsRequestingPerm = true
         val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS)
         intent.data = Uri.parse("package:$packageName")
         startActivityForResult(intent, REQUEST_CODE_WRITE_SETTINGS)
@@ -98,6 +117,7 @@ class MainActivity : Activity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        mIsRequestingPerm = false
         if (requestCode == REQUEST_CODE_WRITE_SETTINGS && Build.VERSION.SDK_INT >= 23) {
             if (Settings.System.canWrite(this)) {
                 lockScreenDelayed()
@@ -107,11 +127,18 @@ class MainActivity : Activity() {
 
     private fun lockScreenDelayed() {
         blackScreen()
-        mOriginalLockTime = Settings.System.getInt(contentResolver, "screen_off_timeout")
-        Settings.System.putInt(contentResolver, "screen_off_timeout", 0)
+        mOriginalLockTime = Settings.System.getInt(contentResolver, Settings.System.SCREEN_OFF_TIMEOUT)
+        Settings.System.putInt(contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, 0)
+    }
+
+    private fun resetLockTime() {
+        if (canWriteSystem()) {
+            Settings.System.putInt(contentResolver, Settings.System.SCREEN_OFF_TIMEOUT, mOriginalLockTime)
+        }
     }
 
     private fun blackScreen() {
+        setWindowBrightness(0)
         layout_main_bg.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LOW_PROFILE or
                 View.SYSTEM_UI_FLAG_FULLSCREEN or
@@ -119,6 +146,22 @@ class MainActivity : Activity() {
                 View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
                 View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
                 View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+    }
+
+    private fun setWindowBrightness(brightness: Int) {
+        val window = window
+        val lp = window.attributes
+        lp.screenBrightness = brightness / 255.0f
+        window.attributes = lp
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        when (keyCode) {
+            KeyEvent.KEYCODE_BACK -> {
+                return true
+            }
+        }
+        return super.onKeyDown(keyCode, event)
     }
 
     private fun registerScreenStat() {
@@ -141,9 +184,7 @@ class MainActivity : Activity() {
             when (intent!!.action) {
                 Intent.ACTION_SCREEN_OFF -> {
                     Log.d(TAG, "Intent.ACTION_SCREEN_OFF")
-                    if (canWriteSystem()) {
-                        Settings.System.putInt(contentResolver, "screen_off_timeout", mOriginalLockTime)
-                    }
+                    resetLockTime()
                     Handler().postDelayed({
                         killSelf()
                     }, 768)
