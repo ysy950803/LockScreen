@@ -17,7 +17,7 @@ import android.widget.Toast
 
 class MainActivity : Activity() {
 
-    private val TAG = "MainActivty"
+    private val TAG = "MainActivity"
     private val REQUEST_CODE_WRITE_SETTINGS = 1
 
     private lateinit var mPolicyManager: DevicePolicyManager
