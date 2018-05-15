@@ -14,7 +14,6 @@ import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Toast
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : Activity() {
 
@@ -56,9 +55,6 @@ class MainActivity : Activity() {
         mComponentName = ComponentName(this, AdminReceiver::class.java)
 
         if (mIsNewLockMode) {
-            layout_main_bg.setOnClickListener({
-                blackScreen()
-            })
             mScreenStatReceiver = ScreenStatReceiver()
             registerScreenStat()
         }
@@ -139,7 +135,7 @@ class MainActivity : Activity() {
 
     private fun blackScreen() {
         setWindowBrightness(0)
-        layout_main_bg.systemUiVisibility =
+        window.decorView.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LOW_PROFILE or
                 View.SYSTEM_UI_FLAG_FULLSCREEN or
                 View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
