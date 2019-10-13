@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/baseline_account_balance_wallet_black_36"
+        android:shortcutDisabledMessage="@string/shortcutDisabledMessage"
+        android:shortcutId="staticId_1"
+        android:shortcutShortLabel="@string/shortcutShortLabel_1">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetClass="com.miui.tsmclient.ui.quick.DoubleClickActivity"
+            android:targetPackage="com.miui.tsmclient" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+</shortcuts>

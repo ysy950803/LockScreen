@@ -4,4 +4,7 @@
     <string name="title_activity_fullscreen">FullscreenActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="shortcutDisabledMessage">暂时不支持快捷方式哦</string>
+    <string name="shortcutShortLabel_1">启动TSM</string>
 </resources>
